@@ -21,7 +21,7 @@ from xml.etree import ElementTree
 
 GET = ['LIST', 'DOWNLOAD']
 PUT = []
-POST = ['COPY']
+POST = ['COPY', 'IMPORT']
 DELETE = ['DELETE']
 
 class playlistsV3(object):
@@ -29,6 +29,67 @@ class playlistsV3(object):
 	@classmethod
 	def init(self):
 		self.getListsURL = misc.GetLoopBack() + '/playlists/all'
+
+	'''
+	This metode will import a playlist 
+	Takes a file that it uploads, as well as a userid as the target user		
+	'''
+	@classmethod
+	def IMPORT(self, req, *args):
+		print 'Ged Import'
+		try:
+			if 'file' not in req.request.files:
+				Log.Critical('Missing file to upload')
+				req.clear()
+				req.set_status(412)			
+				req.finish('Missing file to upload')
+			# Get the playlist as an array of lines
+			m3u8File = req.request.files['file'][0]['body'].split('\n')
+
+			print 'Ged 1', m3u8File
+			bOurList = False
+			if '#Server Id' in m3u8File[4]:
+				# Seems like the playlist was created by us, so we are happy, and maybe saves time here
+				bOurList = True
+				# Get the Id
+				ServerId = m3u8File[4].split(':')[1].strip()
+				# Get the length
+				length = len(m3u8File)
+				# Get the type
+				playlistType = m3u8File[3].split(':')[1].strip()
+				# Get the Name
+				playlistTitle = m3u8File[2].split(':')[1].strip()
+				# Is the server the same as the one that created the playlist?
+				bSameServer = (ServerId == XML.ElementFromURL('http://127.0.0.1:32400/identity').get('machineIdentifier')) 
+				
+		
+				print 'Ged 4 Id',  ServerId, length, playlistType, playlistTitle, bSameServer, bOurList
+
+
+
+			# Walk the playlist, in order to generate the json we need for the import, but we have 4 seperate cases here: same server or not, and our list or not
+			# It's a mess....SIGH.....I need a life besides a virtual one :(
+
+
+	
+
+			# Make url for creation of playlist
+			targetFirstUrl = misc.GetLoopBack() + '/playlists?type=' + playlistType + '&title=' + String.Quote(playlistTitle) + '&smart=0&uri=library://'
+			counter = 0
+
+
+			print 'Ged 6', targetFirstUrl
+
+
+			# Get user
+			# Walk playlist, and add only valid stuff
+
+
+		except Exception, e:
+			Log.Exception('Unknown error in Pleaylist Import was %s' %(str(e)))
+
+
+
 
 	''' This metode will copy a playlist. between users '''
 	@classmethod
@@ -138,6 +199,11 @@ class playlistsV3(object):
 			# Make url for creation of playlist
 			targetFirstUrl = misc.GetLoopBack() + '/playlists?type=' + playlistType + '&title=' + String.Quote(playlistTitle) + '&smart=0&uri=library://'
 			counter = 0
+
+			print 'Ged77'
+			print jsonItems
+
+
 			for lib in jsonItems:
 				if counter < 1:
 					targetFirstUrl += lib + '/directory//library/metadata/'
@@ -219,6 +285,8 @@ class playlistsV3(object):
 							req.clear()
 							req.set_status(500)			
 							req.finish('Exception happened when downloading a playlist for the user was: %s' %(str(e)))
+					# Get server ID
+					id = XML.ElementFromURL('http://127.0.0.1:32400/identity').get('machineIdentifier')
 					# Get title of playlist
 					title = playlist.get('title')
 					playListType = playlist.get('playlistType')
@@ -234,6 +302,7 @@ class playlistsV3(object):
 					req.write(unicode('#Written by WebTools for Plex') + '\n')
 					req.write(unicode('#Playlist name: ' + title) + '\n')
 					req.write(unicode('#Playlist type: ' + playListType) + '\n')
+					req.write(unicode('#Server Id: ' + id) + '\n')
 					# Lets grap the individual items
 					for item in playlist:
 						req.write(unicode('#{"Id":' + item.get('ratingKey') + ', "ListId":' + item.get('playlistItemID') + '}\n'))
