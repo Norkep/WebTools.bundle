@@ -1,5 +1,5 @@
 ﻿'use strict'
-var webtools = angular.module('webtools', ['ngRoute', 'ngDialog']);
+var webtools = angular.module('webtools', ['ngRoute', 'ngDialog', 'gettext']);
 
 webtools.config(['$interpolateProvider', '$routeProvider', '$locationProvider', function ($interpolateProvider, $routeProvider, $locationProvider) {
     $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
@@ -25,7 +25,15 @@ webtools.config(['$interpolateProvider', '$routeProvider', '$locationProvider', 
         templateUrl: "static/findmedia/fm.html",
         controller: "fmController"
     })
+    .when("/playlist", {
+        templateUrl: "static/playlist/playlist.html",
+        controller: "playlistController"
+    })
     //Options
+    .when("/language", {
+        templateUrl: "static/language/language.html",
+        controller: "languageController"
+    })
     .when("/theme", {
         templateUrl: "static/theme/theme.html",
         controller: "themeController"
@@ -40,9 +48,17 @@ webtools.config(['$interpolateProvider', '$routeProvider', '$locationProvider', 
     });
 }]);
 
-webtools.run(['webtoolsService', 'themeService', function (webtoolsService, themeService) {
+webtools.run(['$rootScope', 'webtoolsService', 'themeService', 'languageService', 'gettextCatalog', function ($rootScope, webtoolsService, themeService, languageService, gettextCatalog) {
     webtoolsService.loadWebToolsVersion();
+    webtoolsService.loadUsers();
     themeService.loadActiveTheme();
+
+    gettextCatalog.baseLanguage = 'en';
+    gettextCatalog.currentLanguage = 'en';
+    gettextCatalog.debugPrefix = "[!] ";
+    gettextCatalog.debug = true; //TODO:: remove
+
+    languageService.loadLanguage();
 }]);
 
 webtools.filter('uasSearchBy', ['uasModel', function (uasModel) {
@@ -63,6 +79,8 @@ webtools.filter('uasSearchBy', ['uasModel', function (uasModel) {
         var filtered = [];
         for (name in items) {
             var item = items[name];
+            if (!Number.isInteger(parseInt(name))) items[name].key = name;
+
             if (item.title.toLowerCase().indexOf(searchValue.toLowerCase()) !== -1) {
                 filtered.push(item);
 
@@ -81,6 +99,24 @@ webtools.filter('uasSearchBy', ['uasModel', function (uasModel) {
     };
 }]);
 
+webtools.filter('orderObjectBy', function () {
+    return function (input, attribute) {
+        if (!angular.isObject(input)) return input;
+
+        var array = [];
+        for (var objectKey in input) {
+            if(!Number.isInteger(parseInt(objectKey))) input[objectKey].key = objectKey;
+            array.push(input[objectKey]);
+        }
+
+        array.sort(function (a, b) {
+            if (a[attribute] < b[attribute]) return -1;
+            if (a[attribute] > b[attribute]) return 1;
+            return 0;
+        });
+        return array;
+    }
+});
 //webtools.filter('subSearchFilter', ['subModel', function (subModel) {
 //    return function (items, searchResults) {
 //        if (searchResults === null) return items;

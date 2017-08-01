@@ -19,10 +19,10 @@
         $scope.uasModel.selectedType = type;
     }
 
-    $scope.typeExist = function (itemTypes) {
-        if (uasModel.selectedType.name === "All") return true;
-        for(var i = 0;i < itemTypes.length;i++){
-            if (uasModel.selectedType.name === itemTypes[i]) return true;
+    $scope.typeExist = function (selectedTypeName, itemTypes) {
+        if (selectedTypeName === "All") return true;
+        for (var i = 0; i < itemTypes.length; i++) {
+            if (selectedTypeName === itemTypes[i]) return true;
         }
         return false;
     }
@@ -34,6 +34,7 @@
         else uasService.installUpdate(repo);
     }
 
+
     $scope.delete = function (repo, repoUrl) {
         repo.url = repoUrl;
         uasService.delete(repo);
@@ -43,14 +44,31 @@
         uasService.migrate($scope.init);
     }
 
-    $scope.forceUAScache = function () {
-        uasService.updateUASCache(true, $scope.init);
+    $scope.forceCache = function () {
+        uasService.forceCache(true, $scope.init);
     }
 
+    $scope.checkBundleUpdates = function () {
+        uasService.getUpdateList();
+    }
+
+    $scope.updateAllBundles = function () {
+        for (var i = 0; i < uasModel.updateList.length; i++) {
+            var item = uasModel.list[uasModel.updateList[i].key];
+            $scope.installUpdate(item, item.key);
+        }
+    }
+
+    //Validation helper
+    $scope.validUrl = function (url) {
+        return url.indexOf("http") !== -1;
+    }
+
+    //Init
     if (localStorage.uasUpdated) {
         $scope.init();
     } else {
-        uasService.updateUASCache(false, function () {
+        uasService.forceCache(false, function () {
             localStorage.uasUpdated = true;
             $scope.init();
         });

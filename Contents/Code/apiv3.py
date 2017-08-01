@@ -3,7 +3,7 @@
 #
 #	Author: dane22, a Plex Community member
 #
-# Handles calles to the API V3
+# 	Handles calles to the API V3
 #
 ######################################################################################################################
 
@@ -46,7 +46,7 @@ class apiv3(BaseHandler):
 	# Make the call
 	# TODO: Make this more dynamic if possible
 	def makeCall(self):
-		Log.Debug('Recieved an apiV3 GET call for module: ' + self.module + ' for methode: ' + self.request.method)		
+		Log.Debug('Recieved an apiV3 call for module: ' + self.module + ' for method: ' + self.request.method)		
 		# Generate a handle to the class
 		try:	myClass = getattr(pmsV3, V3MODULES[self.module])
 		except:	
@@ -99,14 +99,3 @@ class apiv3(BaseHandler):
 	@authenticated
 	def delete(self, **params):
 		self.makeCall()
-
-
-
-
-
-
-
-
-
-
-

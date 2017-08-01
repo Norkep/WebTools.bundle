@@ -10,11 +10,19 @@
         }).then(function (resp) {
             uasModel.installedList = resp.data;
             for (var installedItem in uasModel.installedList) {
-                if (!uasModel.list[installedItem]) {
-                    uasModel.list[installedItem] = uasModel.installedList[installedItem];
+                var item = uasModel.list[installedItem];
+                if (!item) {
+                    item = uasModel.installedList[installedItem];
+                    //item.description = "----";
                 }
-                uasModel.list[installedItem].installed = true;
-                uasModel.list[installedItem].url = installedItem;
+                item.installed = true;
+                item.url = installedItem;
+                item.date = uasModel.installedList[installedItem].date;
+                item.supporturl = uasModel.installedList[installedItem].supporturl;
+
+                if (!item.icon) item.icon = "art-default.jpg";
+
+                uasModel.list[installedItem] = item;
                 //_this.getLastUpdateTime(uasModel.list[installedItem]);
             }
             if (callback) callback(resp.data);
@@ -24,7 +32,7 @@
             webtoolsModel.uasLoading = false;
         });
     }
-    
+
     this.getReleaseInfo = function (escapedUrl, callback) {
         webtoolsModel.uasLoading = true;
         var url = webtoolsModel.apiV3Url + "/git/getReleaseInfo/" + escapedUrl + "/version/[latest, all]";
@@ -105,6 +113,25 @@
             method: "GET",
             url: url,
         }).then(function (resp) {
+            var arr = [];
+            for (var key in resp.data) {
+                uasModel.list[key].updateAvailable = true;
+                uasModel.list[key].type.push("Updates available")
+                var item = resp.data[key];
+                item.key = key;
+                arr.push(item);
+            }
+            uasModel.updateList = arr;
+            if (uasModel.updateList.length > 0) {
+                uasModel.updateType = {
+                    key: "Updates available",
+                    installed: uasModel.updateList.length,
+                    viewInstalled: uasModel.updateList.length,
+                    total: uasModel.types["All"].installed,
+                    viewTotal: uasModel.types["All"].installed
+                };
+            }
+
             if (callback) callback(resp.data);
             webtoolsModel.uasLoading = false;
         }, function (errorResp) {
@@ -113,8 +140,8 @@
         });
     }
 
-    this.updateUASCache = function (force, callback) {
-        if(!force) force = ""; else force = "/force";
+    this.forceCache = function (force, callback) {
+        if (!force) force = ""; else force = "/force";
         webtoolsModel.uasLoading = true;
         var url = webtoolsModel.apiV3Url + "/git/updateUASCache" + force;
         $http({
@@ -124,7 +151,7 @@
             if (callback) callback(resp.data);
             webtoolsModel.uasLoading = false;
         }, function (errorResp) {
-            webtoolsService.log("uasService.updateUASCache - " + webtoolsService.formatError(errorResp), "Uas", true, url);
+            webtoolsService.log("uasService.forceCache - " + webtoolsService.formatError(errorResp), "Uas", true, url);
             webtoolsModel.uasLoading = false;
         });
     }
@@ -150,7 +177,7 @@
         var url = webtoolsModel.apiV3Url + "/git/migrate";
         $http({
             method: "PUT",
-            url: url,
+            url: url
         }).then(function (resp) {
             if (callback) callback(resp.data);
             webtoolsModel.uasLoading = false;
@@ -171,9 +198,19 @@
             }
         }).then(function (resp) {
             repo.installed = true;
+            repo.date = resp.data.date;
+
+            for (var i = 0; i < resp.data.type.length; i++) {
+                var type = resp.data.type[i];
+                uasModel.types[type].installed += 1;
+                uasModel.types[type].viewInstalled += 1;
+
+                uasModel.types["All"].installed += 1;
+                uasModel.types["All"].viewInstalled += 1;
+            }
+
             if (callback) callback(resp.data);
             repo.workingLoading = false;
-            //_this.getLastUpdateTime(repo);
         }, function (errorResp) {
             //webtoolsService.log("uasService.installUpdate - " + webtoolsService.formatError(errorResp), "Uas", true, url);
             webtoolsService.log("Could not install or update bundle. Check the following URL<br /> BUNDLE URL: " + repo.url, "Uas", true, url); //CUSTOM ERROR BECAUSE OF MANUAL INSTALL -> Do not want regex check for urls..
@@ -189,9 +226,18 @@
             url: url
         }).then(function (resp) {
             repo.installed = false;
+            repo.date = null;
+            for (var i = 0; i < repo.type.length; i++) {
+                var type = repo.type[i];
+                uasModel.types[type].installed -= 1;
+                uasModel.types[type].viewInstalled -= 1;
+
+                uasModel.types["All"].installed -= 1;
+                uasModel.types["All"].viewInstalled -= 1;
+            }
+
             if (callback) callback(resp.data);
             repo.workingLoading = false;
-            //_this.getLastUpdateTime(repo);
         }, function (errorResp) {
             webtoolsService.log("uasService.installUpdate - " + webtoolsService.formatError(errorResp), "Uas", true, url);
             repo.workingLoading = false;
@@ -203,7 +249,7 @@
         var url = webtoolsModel.apiV3Url + "/git/upgradeWT";
         $http({
             method: "PUT",
-            url: url,
+            url: url
         }).then(function (resp) {
             debugger;
             if (callback) callback(resp.data);

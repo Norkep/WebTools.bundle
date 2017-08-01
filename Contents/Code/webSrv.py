@@ -6,7 +6,8 @@
 #
 ######################################################################################################################
 
-from consts import DEBUGMODE, WT_AUTH, VERSION, NAME, V3MODULES, BASEURL
+from consts import DEBUGMODE, WT_AUTH, VERSION, NAME, V3MODULES, BASEURL, UILANGUAGE, UILANGUAGEDEBUG
+
 
 import sys
 # Add modules dir to search path
@@ -23,19 +24,7 @@ import threading
 import os, sys, time
 
 import apiv3
-
-# Migrated to new way
 from plextvhelper import plexTV
-from git import git
-from logs import logs
-from pms import pms
-from settings import settings
-from findMedia import findMedia
-from language import language
-from plex2csv import plex2csv
-from wt import wt
-from scheduler import scheduler
-from jsonExporter import jsonExporter
 
 # Below used to find path of this file
 from inspect import getsourcefile
@@ -48,36 +37,44 @@ from os.path import abspath
 
 # Path to http folder within the bundle
 def getActualHTTPPath():
-	HTTPPath = Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name, NAME + '.bundle', 'http')
-	if not os.path.isdir(HTTPPath):
-		Log.Critical('Could not find my http path in: ' + HTTPPath)
-		return ''
-	else:
-		return HTTPPath
+	try:
+		HTTPPath = os.path.normpath(Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name, NAME + '.bundle', 'http'))
+		if not os.path.isdir(HTTPPath):
+			Log.Critical('Could not find my http path in: ' + HTTPPath)
+			return ''
+		else:
+			return HTTPPath
+	except Exception, e:
+		Log.Exception('Exception in getActualHTTPPath was %s' %(str(e)))
 
 # Path to bundle folder within the bundle
 def isCorrectPath(req):	
-	installedPlugInPath, skipStr = abspath(getsourcefile(lambda:0)).upper().split(str(NAME).upper() + '.BUNDLE',1)
-	targetPath = Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name).upper()
-	if installedPlugInPath[:-1] != targetPath:
-		Log.Debug('************************************************')
-		Log.Debug('Wrong installation path detected!!!!')
-		Log.Debug('')
-		Log.Debug('Correct path is:')
-		Log.Debug(Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name, NAME + '.bundle'))
-		Log.Debug('************************************************')
-		installedPlugInPath, skipStr = abspath(getsourcefile(lambda:0)).split('/Contents',1)
-		msg = '<h1>Wrong installation path detected</h1>'
-		msg = msg + '<p>It seems like you installed ' + NAME + ' into the wrong folder</p>'
-		msg = msg + '<p>You installed ' + NAME + ' here:<p>'
-		msg = msg + installedPlugInPath
-		msg = msg + '<p>but the correct folder is:<p>'
-		msg = msg + Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name, NAME + '.bundle')
-		req.clear()
-		req.set_status(404)
-		req.finish(msg)
-	else:
-		Log.Info('Verified a correct install path as: ' + targetPath)
+	try:
+		installedPlugInPath = os.path.normpath(abspath(getsourcefile(lambda:0)).split(str(NAME) + '.bundle',1)[0])
+		targetPath = os.path.normpath(Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name))
+		if installedPlugInPath != targetPath:
+			Log.Debug('************************************************')
+			Log.Debug('Wrong installation path detected!!!!')
+			Log.Debug('')
+			Log.Debug('Currently installed in:')
+			Log.Debug(installedPlugInPath)
+			Log.Debug('Correct path is:')
+			Log.Debug(Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name, NAME + '.bundle'))
+			Log.Debug('************************************************')
+			installedPlugInPath, skipStr = abspath(getsourcefile(lambda:0)).split('/Contents',1)
+			msg = '<h1>Wrong installation path detected</h1>'
+			msg = msg + '<p>It seems like you installed ' + NAME + ' into the wrong folder</p>'
+			msg = msg + '<p>You installed ' + NAME + ' here:<p>'
+			msg = msg + installedPlugInPath
+			msg = msg + '<p>but the correct folder is:<p>'
+			msg = msg + Core.storage.join_path(Core.app_support_path, Core.config.bundles_dir_name, NAME + '.bundle')
+			req.clear()
+			req.set_status(404)
+			req.finish(msg)
+		else:
+			Log.Info('Verified a correct install path as: ' + targetPath)
+	except Exception, e:
+		Log.Exception('Exception in isCorrectPath was %s' %(str(e)))
 
 #************** webTools functions ******************************
 ''' Here we have the supported functions '''
@@ -92,11 +89,13 @@ class webTools(object):
 		try:
 			scheme = Dict['wt_csstheme']
 			if scheme == None:
-				scheme = ''
+				scheme = ''						
 			retVal = {'version': VERSION, 
 							'PasswordSet': Dict['pwdset'],
 							'PlexTVOnline': plexTV().auth2myPlex(),
-							'wt_csstheme': scheme}
+							'wt_csstheme': scheme,
+							'UILanguageDebug': UILANGUAGEDEBUG,
+							'UILanguage': UILANGUAGE}
 			Log.Info('Version requested, returning ' + str(retVal))
 			return retVal
 		except Exception, e:
@@ -300,8 +299,8 @@ class versionHandler(RequestHandler):
 		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 		self.write(webTools().getVersion())
 
+''' Handler to get images from the DATA API '''
 class imageHandler(RequestHandler):
-#	@authenticated
 	def get(self, **params):
 		# Get name of image
 		trash, image = self.request.uri.rsplit('/',1)
@@ -311,8 +310,11 @@ class imageHandler(RequestHandler):
 			# Set content-type in header
 			contenttype = 'image/' + extension[1:]
 			self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-			self.set_header('Content-type',  contenttype)
+			self.set_header('Content-Type',  contenttype)
 			try:
+				# Redirect to unknown icon, in case frontend dev forgets ;-)
+				if image == '':
+					image = 'NoIcon.png'
 				self.write(Data.Load(image))
 				self.finish()
 			except Exception, e:
@@ -321,185 +323,48 @@ class imageHandler(RequestHandler):
 			self.set_status(404)
 			self.finish()
 
-class webTools2Handler(BaseHandler):	
-	# Disable auth when debug
-	def prepare(self):
-		if DEBUGMODE:
-			if not WT_AUTH:
-				self.set_secure_cookie(NAME, Hash.MD5(Dict['SharedSecret']+Dict['password']), expires_days = None)
-
-	#******* GET REQUEST *********
-	@authenticated
-	# Get Request
-	def get(self, **params):
-		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')		
-		module = self.get_argument('module', 'missing')
-		if module == 'missing':
-			self.clear()
-			self.set_status(404)
-			self.finish('Missing function call')
-			return
+class translateHandler(RequestHandler):
+	def get(self, **params):		
+		# Name of javascript
+		fileName = 'translations.js'
+		if Data.Exists(fileName):			
+			# Set content-type in header
+			contenttype = 'application/javascript'
+			self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+			self.set_header('Content-Type',  contenttype)
+			try:
+				self.write(Data.Load(fileName))
+				self.finish()
+			except Exception, e:
+				Log.Exception('Exception in translateHandler was: %s' %(str(e)))
 		else:
-			Log.Debug('Recieved a get call for module: ' + module)
-			
-	
-#TODO
-			''' Attempt to create a dynamic import, but so far, it sadly breaks access to the PMS API :-(
-			import sys
-			sys.path.append(os.path.join(Core.app_support_path, 'Plug-ins', NAME + '.bundle', 'Contents', 'Code'))
-			mod = import_module(module)
-			modClass = getattr(mod, module)()
-			print 'GED1', dir(modClass)
-			callFunction = getattr(modClass, 'reqprocess')
-			self = modClass().reqprocess(self)
-			'''
-
-			#TODO: Remove/Alter this when done
-			if module.upper() in V3MODULES:
-				if '2.' not in VERSION:
-					Log.Critical('Api V2 is about to be retired....Please update your calls towards Api V3 instead')
-					Log.Critical('Params was: ' + str(params))
-#					self.clear()
-#					self.set_status(403)
-#					self.finish('Oliver!!!!  This has been migrated to api V3 :-)')
-
-
-
-			
-
-			if module == 'git':			
-				self = git().reqprocess(self)
-			elif module == 'logs':
-				self = logs().reqprocess(self)
-			elif module == 'pms':
-				self = pms().reqprocess(self)
-			elif module == 'settings':
-				self = settings().reqprocess(self)
-			elif module == 'findMedia':
-				self = findMedia().reqprocess(self)
-			elif module == 'jsonExporter':
-#				self = jsonExporter.reqprocess(self)
-				try:
-					m = getattr(module)
-
-				except Exception, e:
-					print 'Ged json Exception: ' + str(e)
-
-
-
-
-			elif module == 'language':
-				self = language().reqprocess(self)
-			elif module == 'plex2csv':
-				self = plex2csv().reqprocess(self)
-			elif module == 'wt':
-				self = wt().reqprocess(self)
-			elif module == 'scheduler':
-				print 'Ged WebSrv Scheduler'
-				self = scheduler().reqprocess(self)
-			else:
-				self.clear()
-				self.set_status(412)
-				self.finish('Unknown module call')
-				return
-
-	#******* POST REQUEST *********
-	@authenticated
-	def post(self, **params):
-		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')		
-		module = self.get_argument('module', 'missing')
-		if module == 'missing':
-			self.clear()
+			Log.Critical('Could not find translations.js')
 			self.set_status(404)
-			self.finish('Missing function call')
-			return
-		else:
-			Log.Debug('Recieved a post call for module: ' + module)
-			if module == 'logs':			
-				self = logs().reqprocessPost(self)
-			elif module == 'settings':			
-				self = settings().reqprocessPost(self)
-			elif module == 'pms':			
-				self = pms().reqprocessPost(self)
-			elif module == 'findMedia':		
-				self = findMedia().reqprocessPost(self)
-			elif module == 'wt':		
-				self = wt().reqprocessPost(self)
-			elif module == 'scheduler':		
-				self = scheduler().reqprocessPost(self)
-			elif module == 'jsonExporter':	
-				self = jsonExporter.reqprocessPost(self)
-			else:
-				self.clear()
-				self.set_status(412)
-				self.finish('Unknown module call')
-				return
+			self.write('Missing translation script')
+			self.finish()			
 
-	#******* DELETE REQUEST *********
-	@authenticated
-	def delete(self, **params):
-		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')		
-		module = self.get_argument('module', 'missing')
-		if module == 'missing':
-			self.clear()
-			self.set_status(404)
-			self.finish('Missing function call')
-			return
-		else:
-			Log.Debug('Recieved a delete call for module: ' + module)
-			if module == 'pms':			
-				self = pms().reqprocessDelete(self)
-			else:
-				self.clear()
-				self.set_status(412)
-				self.finish('Unknown module call')
-				return
-
-	#******* PUT REQUEST *********
-	@authenticated
-	def put(self, **params):
-		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')		
-		module = self.get_argument('module', 'missing')
-		if module == 'missing':
-			self.clear()
-			self.set_status(404)
-			self.finish('Missing function call')
-			return
-		else:
-			Log.Debug('Recieved a PUT call for module: ' + module)
-			if module == 'settings':			
-				self = settings().reqprocessPUT(self)
-			elif module == 'git':			
-				self = git().reqprocessPUT(self)
-			elif module == 'pms':			
-				self = pms().reqprocessPUT(self)
-			else:
-				self.clear()
-				self.set_status(412)
-				self.finish('Unknown module call')
-				return
 
 handlers = [(r"%s/login" %BASEURL, LoginHandler),
-						(r"%s/logout" %BASEURL, LogoutHandler),
-						(r"%s/version" %BASEURL, versionHandler),
-						(r"%s/uas/Resources.*$" %BASEURL, imageHandler),																	# Grap images from Data framework
-						(r'%s/' %BASEURL, idxHandler),																										# Index
-						(r'%s' %BASEURL, idxHandler),																											# Index
-						(r'%s/index.html' %BASEURL, idxHandler),																					# Index
-						(r'%s/api/v3.*$' %BASEURL, apiv3.apiv3),																					# API V3
-						(r'%s/webtools2*$' %BASEURL, webTools2Handler),																		# API V2
-						(r'%s/(.*)' %BASEURL, MyStaticFileHandler, {'path': getActualHTTPPath()})					# Static files
+	(r"%s/logout" %BASEURL, LogoutHandler),
+	(r"%s/version" %BASEURL, versionHandler),
+	(r"%s/uas/Resources.*$" %BASEURL, imageHandler),											# Grap images from Data framework
+	(r"%s/static/_shared/translations.js" %BASEURL, translateHandler),							# Grap translation.js from datastore
+	(r'%s/' %BASEURL, idxHandler),																# Index
+	(r'%s' %BASEURL, idxHandler),																# Index
+	(r'%s/index.html' %BASEURL, idxHandler),													# Index
+	(r'%s/api/v3.*$' %BASEURL, apiv3.apiv3),													# API V3	
+	(r'%s/(.*)' %BASEURL, MyStaticFileHandler, {'path': getActualHTTPPath()})					# Static files
 ]
 
 if Prefs['Force_SSL']:
 	httpHandlers = [(r"%s/login" %BASEURL, ForceTSLHandler),
-									(r"%s/logout" %BASEURL, LogoutHandler),
-									(r"%s/version" %BASEURL, ForceTSLHandler),
-									(r'%s/' %BASEURL, ForceTSLHandler),
-									(r'%s/index.html' %BASEURL, ForceTSLHandler),
-									(r"%s/uas/Resources.*$" %BASEURL, imageHandler),														# Grap images from Data framework
-									(r'%s/api/v3.*$' %BASEURL, apiv3.apiv3),
-									(r'%s/webtools2*$' %BASEURL, webTools2Handler)
+		(r"%s/logout" %BASEURL, LogoutHandler),
+		(r"%s/version" %BASEURL, ForceTSLHandler),
+		(r'%s/' %BASEURL, ForceTSLHandler),
+		(r'%s/index.html' %BASEURL, ForceTSLHandler),
+		(r"%s/uas/Resources.*$" %BASEURL, imageHandler),										# Grap images from Data framework
+		(r"%s/static/_shared/translations.js" %BASEURL, translateHandler),							# Grap translation.js from datastore
+		(r'%s/api/v3.*$' %BASEURL, apiv3.apiv3)		
 ]
 else:
 	httpHandlers = handlers
@@ -532,7 +397,6 @@ def start_tornado():
 		ports = int(Prefs['WEB_Port_https'])	
 		http_server.listen(port)
 		http_serverTLS.listen(ports)
-
 		Log.Debug('Starting tornado on ports %s and %s' %(port, ports))
 		IOLoop.instance().start()
 	except Exception, e:

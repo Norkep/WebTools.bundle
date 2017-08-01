@@ -5,6 +5,7 @@
 #
 #					Allows you to manipulate subtitles on Plex Media Server
 #
+#					Author:			dagaluf, a Plex Community member
 #					Author:			dane22, a Plex Community member
 #
 #					Support thread:	https://forums.plex.tv/discussion/126254
@@ -29,10 +30,12 @@ from wtV3 import upgradeCleanup
 def Start():
 	global SECRETKEY
 	runningLocale = locale.getdefaultlocale()
-	if DEBUGMODE:		
-		print("********  Started %s on %s at %s with locale set to %s **********" %(NAME  + ' V' + VERSION, Platform.OS, time.strftime("%Y-%m-%d %H:%M"), runningLocale))
+	if DEBUGMODE:	
+		try:	
+			print("********  Started %s on %s at %s with locale set to %s **********" %(NAME  + ' V' + VERSION, Platform.OS, time.strftime("%Y-%m-%d %H:%M"), runningLocale))
+		except:
+			pass
 	Log.Debug("*******  Started %s on %s at %s with locale set to %s ***********" %(NAME + ' V' + VERSION, Platform.OS, time.strftime("%Y-%m-%d %H:%M"), runningLocale))
-	Log.Debug("*******  We have %s as our primary IP address, but will listen on all bound ones  *******" %Network.Address)
 	# Do Upgrade stuff if needed
 	upgradeCleanup()
 	# TODO: Nasty workaround for issue 189

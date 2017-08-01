@@ -71,6 +71,7 @@
 }
 .uas .type.active{
     color:white;
+    border-radius:3px;
     background: #2370ca;
     background: rgba(33,98,173,1);
     background: -moz-linear-gradient(left,rgba(33,98,173,1) 0%,rgba(40,125,222,1) 25%,rgba(40,125,222,1) 75%,rgba(33,98,173,1) 100%);
@@ -84,6 +85,22 @@
     -moz-box-shadow: 0 2px 2px 0 rgba(50,50,50,.6);
     box-shadow: 0 2px 2px 0 rgba(50,50,50,.6);
 }
+.uas .type.update{
+    color:white;
+    border-radius:3px;
+    background: rgba(226,167,3,1);
+    background: -moz-linear-gradient(left, rgba(226,167,3,1) 0%, rgba(247,189,29,1) 40%, rgba(247,189,29,1) 60%, rgba(226,167,3,1) 100%);
+    background: -webkit-gradient(left top, right top, color-stop(0%, rgba(226,167,3,1)), color-stop(40%, rgba(247,189,29,1)), color-stop(60%, rgba(247,189,29,1)), color-stop(100%, rgba(226,167,3,1)));
+    background: -webkit-linear-gradient(left, rgba(226,167,3,1) 0%, rgba(247,189,29,1) 40%, rgba(247,189,29,1) 60%, rgba(226,167,3,1) 100%);
+    background: -o-linear-gradient(left, rgba(226,167,3,1) 0%, rgba(247,189,29,1) 40%, rgba(247,189,29,1) 60%, rgba(226,167,3,1) 100%);
+    background: -ms-linear-gradient(left, rgba(226,167,3,1) 0%, rgba(247,189,29,1) 40%, rgba(247,189,29,1) 60%, rgba(226,167,3,1) 100%);
+    background: linear-gradient(to right, rgba(226,167,3,1) 0%, rgba(247,189,29,1) 40%, rgba(247,189,29,1) 60%, rgba(226,167,3,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e2a703', endColorstr='#e2a703', GradientType=1 );
+    -webkit-box-shadow: 0 2px 2px 0 rgba(50,50,50,.6);
+    -moz-box-shadow: 0 2px 2px 0 rgba(50,50,50,.6);
+    box-shadow: 0 2px 2px 0 rgba(50,50,50,.6);
+}
+
 
 .uas .repoContainer{
     width:90%;
@@ -104,14 +121,15 @@
     height:90px;
 }
 .uas .repoContainer .repo.revealed{
-    height:190px;
+    height:220px;
 }
 .uas .repoContainer .repo.installed{
-    background: rgba(0, 255, 33, 0.24);
+    background:rgba(76, 175, 80, 0.35);
 }
 
 .uas .repoContainer .repo .header{
     padding: 5px;
+    padding-bottom:0;
     cursor:pointer;
     height:90px;
     width:100%;
@@ -144,10 +162,16 @@
 }
 .uas .repoContainer .repo .header .delete:hover{
 }
+.uas .repoContainer .repo .revealedIcon{
+    font-size:18px;
+    margin-right:10px;
+    margin-top:2px;
+}
 
 
 .uas .repoContainer .repo .details{
     padding: 5px;
+    padding-top:1px;
     padding-left:75px;
-    height:100px;
+    height:130px;
 }

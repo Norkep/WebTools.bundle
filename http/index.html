@@ -1,5 +1,5 @@
 ﻿<!--
-    CREATED BY OLIVER CHRISTENSEN
+    CREATED BY OLIVER CHRISTENSEN & TOMMY MIKKELSEN
     GitHub: Creoludifico
     Plex Forum: omc1000
 -->
@@ -22,6 +22,7 @@
         <script src="external/scripts/jquery-2.2.4.min.js"></script>
         <script src="external/scripts/bootstrap.min.js"></script>
         <script src="external/scripts/angular.min.js"></script>
+        <script src="external/scripts/angular-gettext.min.js"></script>
         <script src="external/scripts/angular-route.min.js"></script>
         <script src="external/scripts/ngDialog.min.js"></script>
         <script src="external/scripts/languagecodes.js"></script>
@@ -30,6 +31,7 @@
         <!-- TODO: Bundle Config? -->
         <link rel="stylesheet" type="text/css" href="static/_shared/global.css" />
         <script src="static/app.js"></script>
+        <script src="static/_shared/translations.js"></script>
 
         <script src="static/_shared/webtoolsModel.js"></script>
         <script src="static/_shared/webtoolsService.js"></script>
@@ -67,10 +69,20 @@
         <script src="static/findmedia/fmService.js"></script>
         <script src="static/findmedia/fmController.js"></script>
 
+        <link rel="stylesheet" type="text/css" href="static/playlist/playlist.css" />
+        <script src="static/playlist/playlistModel.js"></script>
+        <script src="static/playlist/playlistService.js"></script>
+        <script src="static/playlist/playlistController.js"></script>
+
         <link rel="stylesheet" type="text/css" href="static/theme/theme.css" />
         <script src="static/theme/themeModel.js"></script>
         <script src="static/theme/themeService.js"></script>
         <script src="static/theme/themeController.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="static/language/language.css" />
+        <script src="static/language/languageModel.js"></script>
+        <script src="static/language/languageService.js"></script>
+        <script src="static/language/languageController.js"></script>
 
         <link rel="stylesheet" type="text/css" href="static/changelog/cl.css" />
         <script src="static/changelog/clModel.js"></script>
@@ -83,6 +95,7 @@
         <script src="static/_shared/Factory/Dialog/DialogFactory.js"></script>
         <script src="static/_shared/Directive/scrolly/scrolly.js"></script>
         <script src="static/_shared/Directive/ngEnter/ngEnter.js"></script>
+        <script src="static/_shared/Directive/ngTitle/ngTitle.js"></script>
 
         <link rel="stylesheet" type="text/css" ng-href="custom_themes/{[{webtoolsThemeModel.activeTheme}]}" />
     </head>

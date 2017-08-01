@@ -1,5 +1,9 @@
 .git export-ignore
-debug export-ignore
-.gitignore export-ignore
 .gitattributes export-ignore
+/Wiki export-ignore
+.gitignore export-ignore
+debug export-ignore
+.vscode export-ignore
+/po export-ignore
+/translations export-ignore
 
