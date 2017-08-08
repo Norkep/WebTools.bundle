@@ -15,10 +15,6 @@ msgstr "Använd menyn på vänster sida för att navigera i WebTools."
 msgid "Webtools is a tool that enables the use of modules to help you with your Plex Server management."
 msgstr "WebTools är ett verktyg bestående av moduler som hjälper dig att administrera din Plex server."
 
-#: ../http/static/home/home.html:1
-msgid "Welcome to {[{webtoolsModel.versionFormated}]}"
-msgstr "Välkommen till {[{webtoolsModel.versionFormated}]}"
-
 #: ../http/static/sub_management/subHelp.html:6
 msgid "Both local (next to the movie in it's folder or one subfolder) and in the agents folder."
 msgstr "Både lokala (placerade bredvid filmen i sin katalog eller i en tillhörande underkatalog) och i agentens egna katalog."
@@ -27,7 +23,7 @@ msgstr "Både lokala (placerade bredvid filmen i sin katalog eller i en tillhör
 msgid "Change Theme"
 msgstr "Ändra Tema"
 
-#: ../http/static/menu/menu.html:16
+#: ../http/static/menu/menu.html:17
 msgid "Changelog"
 msgstr "Ändra logg"
 
@@ -43,7 +39,7 @@ msgstr "Ta bort vald lokal undertext från hårddisken."
 msgid "File empty"
 msgstr "Filen är tom"
 
-#: ../http/static/menu/menu.html:20
+#: ../http/static/menu/menu.html:21
 msgid "Help"
 msgstr "Hjälp"
 
@@ -79,7 +75,7 @@ msgstr "Välj ett av följande teman för användning:"
 msgid "Select one of the libraries below to scan for videos/shows that are not in the Plex database or is not on your harddrive."
 msgstr "Välj ett av biblioteken nedan för att leta efter Filmer / TV-program som inte existerar i antingen Plex-databasen eller på din hårddisk."
 
-#: ../http/static/menu/menu.html:15
+#: ../http/static/menu/menu.html:16
 msgid "Theme"
 msgstr "Tema"
 
@@ -95,15 +91,15 @@ msgstr "Uppdatera WebTools"
 msgid "View the subtitle and see it's contents to determine what to delete."
 msgstr "Granska innehållet av undertexter för att bedöma vad som ska tas bort."
 
-#: ../http/static/menu/menu.html:22
+#: ../http/static/menu/menu.html:23
 msgid "WT Forum Thread"
 msgstr "WT Forumtråd"
 
-#: ../http/static/menu/menu.html:23
+#: ../http/static/menu/menu.html:24
 msgid "WT GitHub"
 msgstr "WT GitHub"
 
-#: ../http/static/menu/menu.html:24
+#: ../http/static/menu/menu.html:25
 msgid "WT Manual(PDF)"
 msgstr "WT Manual(PDF)"
 
@@ -124,10 +120,12 @@ msgid "Download selected logfile"
 msgstr "Ladda ned vald loggfil"
 
 #: ../http/static/findmedia/fm.html:78
+#: ../http/static/findmedia/fmController.js:12
 msgid "Abort scan"
 msgstr "Avbryt genomsökning"
 
 #: ../http/static/findmedia/fm.html:43
+#: ../http/static/findmedia/fmController.js:9
 msgid "Add ignored folder"
 msgstr "Lägg till ignorerad katalog"
 
@@ -140,6 +138,7 @@ msgid "DUMMY TEXT Playlist can help you with lorem ipsum"
 msgstr "Dummy Text är grekiska för mig :)"
 
 #: ../http/static/findmedia/fm.html:92
+#: ../http/static/findmedia/fmController.js:13
 msgid "Download result"
 msgstr "Nedladdningsresultat"
 
@@ -176,10 +175,12 @@ msgid "Records missing from harddrive"
 msgstr "Sektorer saknas på hårddisken"
 
 #: ../http/static/findmedia/fm.html:59
+#: ../http/static/findmedia/fmController.js:10
 msgid "Reset settings"
 msgstr "Återställ Inställningarna"
 
 #: ../http/static/findmedia/fm.html:67
+#: ../http/static/findmedia/fmController.js:11
 msgid "Save settings"
 msgstr "Spara Inställningarna"
 
@@ -190,4 +191,80 @@ msgstr "Visa Inställningarna"
 #: ../http/static/findmedia/fm.html:48
 msgid "Valid extentions"
 msgstr "Giltig Ändelse"
+
+#: ../http/static/language/language.html:5
+msgid "Change Language"
+msgstr ""
+
+#: ../http/static/menu/menu.html:15
+msgid "Language"
+msgstr ""
+
+#: ../http/static/language/language.html:7
+msgid "{[{lang.name}]}"
+msgstr ""
+
+#: ../http/static/language/language.html:13
+msgid "Force language translation update"
+msgstr ""
+
+#: ../http/static/language/language.html:16
+msgid "If your language is missing, or you want to improve on the translation of it, then please go here:"
+msgstr ""
+
+#: ../http/static/logs/logs.html:11
+msgid "Found"
+msgstr ""
+
+#: ../http/static/home/home.html:1
+msgid "Welcome to"
+msgstr ""
+
+#: ../http/static/logs/logs.html:11
+msgid "rows"
+msgstr ""
+
+#: ../http/static/uas/uasService.js:5
+msgid "Apps migrated:"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:9
+msgid "Clear search"
+msgstr ""
+
+#: ../http/static/findmedia/fmController.js:8
+msgid "Delete ignored folder"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:13
+msgid "Hide/Show search menu"
+msgstr ""
+
+#: ../http/static/findmedia/fmController.js:14
+msgid "Hide/Show settings menu"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:12
+msgid "Jump to top"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:11
+msgid "Next"
+msgstr ""
+
+#: ../http/static/uas/uasService.js:6
+msgid "No apps was migrated:"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:10
+msgid "Previous"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:8
+msgid "Search keyword"
+msgstr ""
+
+#: ../http/static/logs/logsController.js:7
+msgid "search..."
+msgstr ""
 
